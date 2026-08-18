@@ -1,5 +1,7 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate, useNavigation } from 'react-router-dom'
 import { Sidebar } from '../components/Sidebar'
+import { PageLoader } from '../components/PageLoader'
+import { useAuth } from '../context/AuthContext'
 import type { NavItem } from '../types'
 
 const partnerNav: NavItem[] = [
@@ -14,15 +16,43 @@ const partnerNav: NavItem[] = [
   { label: 'Users', path: '/partner/users', icon: 'users' },
 ]
 
-const partnerFooter: NavItem[] = [
-  { label: 'Sign out', path: '/login', icon: 'logout' },
-]
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
+}
+
+function formatCategory(category: string): string {
+  return `${category.charAt(0).toUpperCase()}${category.slice(1)} Partner`
+}
 
 export function PartnerLayout() {
+  const navigate = useNavigate()
+  const navigation = useNavigation()
+  const { session, logout } = useAuth()
+  const partner = session?.partner
+  const user = session?.user
+  const isLoading = navigation.state === 'loading'
+
+  const partnerFooter: NavItem[] = [
+    {
+      label: 'Sign out',
+      path: '/login',
+      icon: 'logout',
+      onClick: () => {
+        logout()
+        navigate('/login')
+      },
+    },
+  ]
+
   return (
     <div className="portal-layout">
       <Sidebar
-        brand="Al Fanar Restaurant"
+        brand={partner?.trading_name ?? 'Partner'}
         subtitle="Partner Portal"
         items={partnerNav}
         footer={partnerFooter}
@@ -30,19 +60,21 @@ export function PartnerLayout() {
       <div className="portal-main">
         <header className="portal-topbar">
           <div className="topbar-left">
-            <span className="topbar-eyebrow">Restaurant Partner</span>
+            <span className="topbar-eyebrow">
+              {partner ? formatCategory(partner.category) : 'Partner'}
+            </span>
             <span className="topbar-title">Self-Service Portal</span>
           </div>
           <div className="topbar-user">
             <div className="topbar-user-meta">
-              <span className="topbar-user-name">Partner Administrator</span>
-              <span className="topbar-user-role">Souq Waqif, Doha</span>
+              <span className="topbar-user-name">{user?.full_name ?? 'Partner User'}</span>
+              <span className="topbar-user-role">{user?.email ?? ''}</span>
             </div>
-            <div className="user-avatar">PA</div>
+            <div className="user-avatar">{initials(user?.full_name ?? 'PU')}</div>
           </div>
         </header>
         <main className="portal-content">
-          <Outlet />
+          {isLoading ? <PageLoader /> : <Outlet />}
         </main>
       </div>
     </div>

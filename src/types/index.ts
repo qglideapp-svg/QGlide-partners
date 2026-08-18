@@ -126,4 +126,5 @@ export interface NavItem {
   label: string
   path: string
   icon: IconName
+  onClick?: () => void
 }

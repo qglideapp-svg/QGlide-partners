@@ -39,14 +39,28 @@ export function Sidebar({ brand, subtitle, items, footer }: SidebarProps) {
       </nav>
       {footer && footer.length > 0 && (
         <div className="sidebar-footer">
-          {footer.map((item) => (
-            <NavLink key={item.path} to={item.path} className="sidebar-link sidebar-link--muted">
-              <span className="sidebar-link-icon">
-                <NavIcon name={item.icon} />
-              </span>
-              {item.label}
-            </NavLink>
-          ))}
+          {footer.map((item) =>
+            item.onClick ? (
+              <button
+                key={item.path}
+                type="button"
+                className="sidebar-link sidebar-link--muted"
+                onClick={item.onClick}
+              >
+                <span className="sidebar-link-icon">
+                  <NavIcon name={item.icon} />
+                </span>
+                {item.label}
+              </button>
+            ) : (
+              <NavLink key={item.path} to={item.path} className="sidebar-link sidebar-link--muted">
+                <span className="sidebar-link-icon">
+                  <NavIcon name={item.icon} />
+                </span>
+                {item.label}
+              </NavLink>
+            ),
+          )}
         </div>
       )}
     </aside>

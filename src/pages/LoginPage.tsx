@@ -1,13 +1,34 @@
-import { type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { type FormEvent, useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import logo from '../assets/logo.png'
 import animeVideo from '../assets/anime.mp4'
+import { useAuth } from '../context/AuthContext'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { isAuthenticated, login } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(e: FormEvent) {
+  if (isAuthenticated) {
+    return <Navigate to="/partner" replace />
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setError(null)
+    setIsSubmitting(true)
+
+    const loginError = await login(email.trim(), password)
+    setIsSubmitting(false)
+
+    if (loginError) {
+      setError(loginError)
+      return
+    }
+
     navigate('/partner')
   }
 
@@ -41,6 +62,11 @@ export function LoginPage() {
         </p>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div className="login-error" role="alert">
+              {error}
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="email">Email address</label>
             <input
@@ -48,7 +74,11 @@ export function LoginPage() {
               type="email"
               className="form-input"
               placeholder="you@yourbusiness.qa"
-              defaultValue="marketing@alfanar.qa"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+              disabled={isSubmitting}
             />
           </div>
           <div className="form-group">
@@ -58,11 +88,19 @@ export function LoginPage() {
               type="password"
               className="form-input"
               placeholder="Enter your password"
-              defaultValue="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+              disabled={isSubmitting}
             />
           </div>
-          <button type="submit" className="btn btn-primary btn-block">
-            Sign in
+          <button
+            type="submit"
+            className="btn btn-primary btn-block"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
       </div>
