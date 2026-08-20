@@ -21,15 +21,20 @@ export function LoginPage() {
     setError(null)
     setIsSubmitting(true)
 
-    const loginError = await login(email.trim(), password)
-    setIsSubmitting(false)
+    try {
+      const loginError = await login(email.trim(), password)
 
-    if (loginError) {
-      setError(loginError)
-      return
+      if (loginError) {
+        setError(loginError)
+        return
+      }
+
+      navigate('/partner')
+    } catch {
+      setError('Unable to sign in. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
-
-    navigate('/partner')
   }
 
   return (

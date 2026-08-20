@@ -24,6 +24,22 @@ function createPartnerFunctionProxy(functionName: string, env: Record<string, st
   }
 }
 
+function createPartnerLoginProxy(env: Record<string, string>): ProxyOptions {
+  return {
+    target: env.VITE_SUPABASE_URL,
+    changeOrigin: true,
+    rewrite: () => '/functions/v1/partner-login',
+    configure: (proxy) => {
+      proxy.on('proxyReq', (proxyReq) => {
+        if (env.VITE_SUPABASE_ANON_KEY) {
+          proxyReq.setHeader('apikey', env.VITE_SUPABASE_ANON_KEY)
+          proxyReq.setHeader('Authorization', `Bearer ${env.VITE_SUPABASE_ANON_KEY}`)
+        }
+      })
+    },
+  }
+}
+
 function createPartnerCollateralProxy(env: Record<string, string>): ProxyOptions {
   return {
     target: env.VITE_SUPABASE_URL,
@@ -53,6 +69,7 @@ export default defineConfig(({ mode }) => {
     server: supabaseUrl
       ? {
           proxy: {
+            '/api/partner-login': createPartnerLoginProxy(env),
             '/api/partner-code-pdf': createPartnerFunctionProxy('partner-code-pdf', env),
             '/api/partner-collateral-pdf': createPartnerCollateralProxy(env),
           },
