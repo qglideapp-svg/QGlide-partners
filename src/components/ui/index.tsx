@@ -7,6 +7,7 @@ interface BadgeProps {
 
 const statusMap: Record<string, string> = {
   active: 'success',
+  complete: 'success',
   pending: 'warning',
   draft: 'neutral',
   suspended: 'danger',

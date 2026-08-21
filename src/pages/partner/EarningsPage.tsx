@@ -1,7 +1,7 @@
 import { Form, useLoaderData, useNavigate, type LoaderFunctionArgs } from 'react-router-dom'
+import { EarningsSkeleton } from '../../components/skeletons/PartnerPageSkeletons'
 import { fetchPartnerSettlements } from '../../api/partnerSettlements'
 import { Badge, Card, formatCurrency, PageHeader, StatCard } from '../../components/ui'
-import { PageLoader } from '../../components/PageLoader'
 import { handlePartnerApiFailure, requirePartnerSession } from '../../lib/partnerLoader'
 import type { PartnerSettlementsData } from '../../types/settlements'
 
@@ -40,7 +40,7 @@ export async function loader({ request }: LoaderFunctionArgs): Promise<PartnerSe
 }
 
 export function HydrateFallback() {
-  return <PageLoader label="Loading earnings…" />
+  return <EarningsSkeleton />
 }
 
 export function Component() {

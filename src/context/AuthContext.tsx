@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import { partnerLogin } from '../api/partnerLogin'
+import { partnerLogout } from '../api/partnerLogout'
 import { clearSession, loadSession, saveSession } from '../lib/authStorage'
 import type { PartnerSession } from '../types/auth'
 
@@ -14,7 +15,7 @@ interface AuthContextValue {
   session: PartnerSession | null
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<string | null>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -34,7 +35,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null
   }, [])
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    const currentSession = loadSession()
+
+    if (currentSession?.access_token) {
+      try {
+        await partnerLogout(currentSession.access_token)
+      } catch {
+        // Still clear local session if the network request fails.
+      }
+    }
+
     clearSession()
     setSession(null)
   }, [])

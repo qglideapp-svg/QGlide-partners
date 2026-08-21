@@ -1,49 +1,89 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { AppProviders } from './AppProviders'
+import { PartnerPageError } from './components/PartnerPageError'
 import { RequireAuth } from './components/RequireAuth'
 import { PartnerLayout } from './layouts/PortalLayouts'
 import { LoginPage } from './pages/LoginPage'
-import { PartnerDriversPage } from './pages/partner/DriversPage'
 import { PartnerRedemptionPage } from './pages/partner/RedemptionPage'
-import { PartnerStatementsPage } from './pages/partner/StatementsPage'
-import { PartnerDocumentsPage } from './pages/partner/DocumentsPage'
-import { PartnerSupportPage } from './pages/partner/SupportPage'
-import { PartnerUsersPage } from './pages/partner/UsersPage'
+// import { PartnerUsersPage } from './pages/partner/UsersPage'
 import { ScanLandingPage } from './pages/public/ScanLandingPage'
 import { ClaimLandingPage } from './pages/public/ClaimLandingPage'
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
   {
-    element: <RequireAuth />,
+    element: <AppProviders />,
     children: [
+      { path: '/login', element: <LoginPage /> },
       {
-        path: '/partner',
-        element: <PartnerLayout />,
+        element: <RequireAuth />,
         children: [
           {
-            index: true,
-            lazy: () => import('./pages/partner/DashboardPage'),
+            path: '/partner',
+            element: <PartnerLayout />,
+            children: [
+              {
+                index: true,
+                lazy: async () => import('./pages/partner/DashboardPage'),
+              },
+              {
+                path: 'codes',
+                lazy: async () => import('./pages/partner/CodesPage'),
+              },
+              {
+                path: 'drivers',
+                lazy: async () => {
+                  const module = await import('./pages/partner/DriversPage')
+                  return {
+                    ...module,
+                    errorElement: <PartnerPageError />,
+                  }
+                },
+              },
+              {
+                path: 'earnings',
+                lazy: async () => import('./pages/partner/EarningsPage'),
+              },
+              { path: 'redemption', element: <PartnerRedemptionPage /> },
+              {
+                path: 'statements',
+                lazy: async () => {
+                  const module = await import('./pages/partner/StatementsPage')
+                  return {
+                    ...module,
+                    errorElement: <PartnerPageError />,
+                  }
+                },
+              },
+              {
+                path: 'documents',
+                lazy: async () => {
+                  const module = await import('./pages/partner/DocumentsPage')
+                  return {
+                    ...module,
+                    errorElement: <PartnerPageError />,
+                  }
+                },
+              },
+              {
+                path: 'support',
+                lazy: async () => {
+                  const module = await import('./pages/partner/SupportPage')
+                  return {
+                    ...module,
+                    errorElement: <PartnerPageError />,
+                  }
+                },
+              },
+              // User management hidden until partner-users API is available
+              // { path: 'users', element: <PartnerUsersPage /> },
+            ],
           },
-          {
-            path: 'codes',
-            lazy: () => import('./pages/partner/CodesPage'),
-          },
-          { path: 'drivers', element: <PartnerDriversPage /> },
-          {
-            path: 'earnings',
-            lazy: () => import('./pages/partner/EarningsPage'),
-          },
-          { path: 'redemption', element: <PartnerRedemptionPage /> },
-          { path: 'statements', element: <PartnerStatementsPage /> },
-          { path: 'documents', element: <PartnerDocumentsPage /> },
-          { path: 'support', element: <PartnerSupportPage /> },
-          { path: 'users', element: <PartnerUsersPage /> },
         ],
       },
+      { path: '/scan/:code?', element: <ScanLandingPage /> },
+      { path: '/claim/:id?', element: <ClaimLandingPage /> },
+      { path: '/', element: <Navigate to="/login" replace /> },
+      { path: '*', element: <Navigate to="/login" replace /> },
     ],
   },
-  { path: '/scan/:code?', element: <ScanLandingPage /> },
-  { path: '/claim/:id?', element: <ClaimLandingPage /> },
-  { path: '/', element: <Navigate to="/login" replace /> },
-  { path: '*', element: <Navigate to="/login" replace /> },
 ])

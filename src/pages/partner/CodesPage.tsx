@@ -6,9 +6,9 @@ import {
   useNavigate,
   type ActionFunctionArgs,
 } from 'react-router-dom'
+import { CodesSkeleton } from '../../components/skeletons/PartnerPageSkeletons'
 import { downloadPartnerCodePdf, downloadPartnerCollateralPdf, fetchPartnerCodeCentre, requestPartnerSubCode } from '../../api/partnerCodeCentre'
 import { Badge, Card, PageHeader } from '../../components/ui'
-import { PageLoader } from '../../components/PageLoader'
 import { useAuth } from '../../context/AuthContext'
 import { usePartnerQrArtwork } from '../../hooks/usePartnerQrArtwork'
 import { clearSession } from '../../lib/authStorage'
@@ -65,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs): Promise<SubCodeAc
 }
 
 export function HydrateFallback() {
-  return <PageLoader label="Loading code centre…" />
+  return <CodesSkeleton />
 }
 
 function DownloadButton({

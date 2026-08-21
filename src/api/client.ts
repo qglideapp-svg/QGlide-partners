@@ -128,6 +128,13 @@ export async function partnerGet<TData>(
   accessToken: string,
   searchParams?: Record<string, string | number | undefined>,
 ): Promise<{ success: true; data: TData } | ApiFailure> {
+  if (!supabaseUrl) {
+    return {
+      success: false,
+      error: 'Partner API is not configured.',
+    }
+  }
+
   const url = new URL(`${supabaseUrl}/functions/v1/${path}`)
 
   if (searchParams) {
@@ -138,11 +145,29 @@ export async function partnerGet<TData>(
     }
   }
 
-  const response = await fetch(url.toString(), {
-    headers: getPartnerAuthHeaders(accessToken),
-  })
+  let response: Response
 
-  const payload = (await response.json()) as { success: true; data: TData } | ApiFailure
+  try {
+    response = await fetch(url.toString(), {
+      headers: getPartnerAuthHeaders(accessToken),
+    })
+  } catch {
+    return {
+      success: false,
+      error: 'Network error while loading data. Please try again.',
+    }
+  }
+
+  let payload: { success: true; data: TData } | ApiFailure
+
+  try {
+    payload = (await response.json()) as { success: true; data: TData } | ApiFailure
+  } catch {
+    return {
+      success: false,
+      error: 'Unexpected response from server. Please try again.',
+    }
+  }
 
   if (!response.ok && payload.success !== false) {
     return {
@@ -158,20 +183,56 @@ export async function partnerPost<TData>(
   path: string,
   accessToken: string | null,
   body: unknown,
+  searchParams?: Record<string, string | number | undefined>,
 ): Promise<{ success: true; data: TData } | ApiFailure> {
+  if (!supabaseUrl) {
+    return {
+      success: false,
+      error: 'Partner API is not configured.',
+    }
+  }
+
+  const url = new URL(`${supabaseUrl}/functions/v1/${path}`)
+
+  if (searchParams) {
+    for (const [key, value] of Object.entries(searchParams)) {
+      if (value !== undefined) {
+        url.searchParams.set(key, String(value))
+      }
+    }
+  }
+
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     apikey: anonKey,
     Authorization: `Bearer ${accessToken ?? anonKey}`,
   }
 
-  const response = await fetch(`${supabaseUrl}/functions/v1/${path}`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-  })
+  let response: Response
 
-  const payload = (await response.json()) as { success: true; data: TData } | ApiFailure
+  try {
+    response = await fetch(url.toString(), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    })
+  } catch {
+    return {
+      success: false,
+      error: 'Network error while completing request. Please try again.',
+    }
+  }
+
+  let payload: { success: true; data: TData } | ApiFailure
+
+  try {
+    payload = (await response.json()) as { success: true; data: TData } | ApiFailure
+  } catch {
+    return {
+      success: false,
+      error: 'Unexpected response from server. Please try again.',
+    }
+  }
 
   if (!response.ok && payload.success !== false) {
     return {

@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useNavigation } from 'react-router-dom'
+import { PartnerRouteSkeleton } from '../components/skeletons/PartnerPageSkeletons'
 import { Sidebar } from '../components/Sidebar'
-import { PageLoader } from '../components/PageLoader'
 import { useAuth } from '../context/AuthContext'
 import type { NavItem } from '../types'
 
@@ -13,7 +13,8 @@ const partnerNav: NavItem[] = [
   { label: 'Statements', path: '/partner/statements', icon: 'reports' },
   { label: 'Documents', path: '/partner/documents', icon: 'documents' },
   { label: 'Support', path: '/partner/support', icon: 'support' },
-  { label: 'Users', path: '/partner/users', icon: 'users' },
+  // User management hidden until partner-users API is available
+  // { label: 'Users', path: '/partner/users', icon: 'users' },
 ]
 
 function initials(name: string): string {
@@ -36,6 +37,7 @@ export function PartnerLayout() {
   const partner = session?.partner
   const user = session?.user
   const isLoading = navigation.state === 'loading'
+  const pendingPath = navigation.location?.pathname ?? ''
 
   const partnerFooter: NavItem[] = [
     {
@@ -43,8 +45,7 @@ export function PartnerLayout() {
       path: '/login',
       icon: 'logout',
       onClick: () => {
-        logout()
-        navigate('/login')
+        void logout().then(() => navigate('/login'))
       },
     },
   ]
@@ -56,6 +57,7 @@ export function PartnerLayout() {
         subtitle="Partner Portal"
         items={partnerNav}
         footer={partnerFooter}
+        pendingPath={isLoading ? pendingPath : undefined}
       />
       <div className="portal-main">
         <header className="portal-topbar">
@@ -73,8 +75,8 @@ export function PartnerLayout() {
             <div className="user-avatar">{initials(user?.full_name ?? 'PU')}</div>
           </div>
         </header>
-        <main className="portal-content">
-          {isLoading ? <PageLoader /> : <Outlet />}
+        <main className="portal-content" aria-busy={isLoading}>
+          {isLoading ? <PartnerRouteSkeleton pathname={pendingPath} /> : <Outlet />}
         </main>
       </div>
     </div>

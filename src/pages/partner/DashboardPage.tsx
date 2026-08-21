@@ -1,7 +1,7 @@
 import { useLoaderData, type LoaderFunctionArgs } from 'react-router-dom'
+import { DashboardSkeleton } from '../../components/skeletons/PartnerPageSkeletons'
 import { fetchPartnerDashboard } from '../../api/partnerDashboard'
 import { Card, formatCurrency, formatNumber, PageHeader, StatCard } from '../../components/ui'
-import { PageLoader } from '../../components/PageLoader'
 import { handlePartnerApiFailure, requirePartnerSession } from '../../lib/partnerLoader'
 import type { PartnerDashboardData } from '../../types/dashboard'
 import { formatRelativeTime } from '../../utils/formatRelativeTime'
@@ -20,7 +20,7 @@ export async function loader({ request }: LoaderFunctionArgs): Promise<PartnerDa
 }
 
 export function HydrateFallback() {
-  return <PageLoader label="Loading dashboard…" />
+  return <DashboardSkeleton />
 }
 
 export function Component() {
